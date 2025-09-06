@@ -14,6 +14,7 @@
     "db:studio": "pnpm drizzle-kit studio"
   },
   "dependencies": {
+    "better-auth": "^1.3.8",
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
     "next": "15.5.2",
