@@ -1,3 +1,4 @@
+// db/schema/business-schema.ts
 import {
   pgTable,
   serial,
