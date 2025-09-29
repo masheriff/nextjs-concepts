@@ -29,8 +29,8 @@ export const customers = pgTable("customers", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  createdBy: integer("created_by").references(() => user.id),
-  updatedBy: integer("updated_by").references(() => user.id),
+  createdBy: text("created_by").references(() => user.id),
+  updatedBy: text("updated_by").references(() => user.id),
 });
 
 // =====================
@@ -44,8 +44,8 @@ export const products = pgTable("products", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  createdBy: integer("created_by").references(() => user.id),
-  updatedBy: integer("updated_by").references(() => user.id),
+  createdBy: text("created_by").references(() => user.id),
+  updatedBy: text("updated_by").references(() => user.id),
 });
 
 // =====================
@@ -59,8 +59,8 @@ export const invoices = pgTable("invoices", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  createdBy: integer("created_by").references(() => user.id),
-  updatedBy: integer("updated_by").references(() => user.id),
+  createdBy: text("created_by").references(() => user.id),
+  updatedBy: text("updated_by").references(() => user.id),
 });
 
 // =====================
@@ -75,6 +75,6 @@ export const invoiceItems = pgTable("invoice_items", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  createdBy: integer("created_by").references(() => user.id),
-  updatedBy: integer("updated_by").references(() => user.id),
+  createdBy: text("created_by").references(() => user.id),
+  updatedBy: text("updated_by").references(() => user.id),
 });
