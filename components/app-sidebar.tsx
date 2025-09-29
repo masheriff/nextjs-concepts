@@ -3,19 +3,14 @@
 import * as React from "react"
 import {
   BookOpen,
-  Bot,
   Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
+  FileText,
+  Package,
   SquareTerminal,
+  Users,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -31,36 +26,51 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "dashboard",
+      url: "/dashboard",
       icon: SquareTerminal,
     },
     {
       title: "Customers",
-      url: "#",
-      icon: BookOpen,
+      url: "/customers",
+      icon: Users, // Changed from BookOpen to Users (more appropriate for customers)
       items: [
         {
           title: "Add",
-          url: "#",
+          url: "/customers/add",
         },
         {
           title: "View All",
-          url: "#",
+          url: "/customers",
+        },
+      ],
+    },
+    {
+      title: "Products",
+      url: "/products",
+      icon: Package, // Changed from Bot to Package (appropriate for products)
+      items: [
+        {
+          title: "Add",
+          url: "/products/add",
+        },
+        {
+          title: "View All",
+          url: "/products",
         },
       ],
     },
     {
       title: "Invoices",
-      url: "#",
-      icon: Bot,
+      url: "/invoices",
+      icon: FileText, // Changed from Bot to FileText (appropriate for invoices)
       items: [
         {
           title: "Add",
-          url: "#",
+          url: "/invoices/add",
         },
         {
           title: "View All",
-          url: "#",
+          url: "/invoices",
         },
       ],
     },

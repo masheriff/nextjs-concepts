@@ -8,6 +8,7 @@ import {
 } from "./ui/breadcrumb";
 import { Separator } from "./ui/separator";
 import { SidebarTrigger } from "./ui/sidebar";
+import { Fragment } from "react";
 
 type BreadcrumbItemType = {
   label: string;
@@ -33,16 +34,20 @@ export function PageHeader({
         <Breadcrumb>
           <BreadcrumbList>
             {breadcrumbs.map((item, index) => (
-              <BreadcrumbItem key={index} className={index < breadcrumbs.length - 1 ? "hidden md:block" : ""}>
-                {item.href && index < breadcrumbs.length - 1 ? (
-                  <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
-                ) : (
-                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                )}
+              <Fragment key={index}>
+                <BreadcrumbItem 
+                  className={index < breadcrumbs.length - 1 ? "hidden md:block" : ""}
+                >
+                  {item.href && index < breadcrumbs.length - 1 ? (
+                    <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                  ) : (
+                    <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                  )}
+                </BreadcrumbItem>
                 {index < breadcrumbs.length - 1 && (
                   <BreadcrumbSeparator className="hidden md:block" />
                 )}
-              </BreadcrumbItem>
+              </Fragment>
             ))}
           </BreadcrumbList>
         </Breadcrumb>
