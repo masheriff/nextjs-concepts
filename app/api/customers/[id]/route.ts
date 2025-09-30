@@ -145,7 +145,6 @@ export async function PATCH(
       .set({
         ...validationResult.data,
         updatedBy: session.user.id,
-        updatedAt: toZonedTime(new Date(), "Asia/Kolkata"), // Ensure updatedAt is set to current time
       })
       .where(eq(customers.id, customerId))
       .returning();

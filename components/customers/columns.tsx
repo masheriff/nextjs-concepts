@@ -66,6 +66,12 @@ function ActionsCell({ customer }: { customer: Customer }) {
         method: "DELETE",
       });
 
+      if (!response.ok) {
+        const result = await response.json();
+        toast.error(result.error || "Failed to delete customer");
+        return;
+      }
+
       // Close dialog
       setShowDeleteDialog(false);
 
@@ -161,7 +167,10 @@ export const customerColumns: ColumnDef<Customer>[] = [
     cell: ({ row }) => {
       try {
         const utcDate = new Date(row.original.createdAt);
-        const kolkataDate = toZonedTime(utcDate, process.env.TIMEZONE || "Asia/Kolkata");
+        const kolkataDate = toZonedTime(
+          utcDate,
+          process.env.TIMEZONE || "Asia/Kolkata"
+        );
         return formatDistanceToNow(kolkataDate, { addSuffix: true });
       } catch {
         return "—";
@@ -174,7 +183,10 @@ export const customerColumns: ColumnDef<Customer>[] = [
     cell: ({ row }) => {
       try {
         const utcDate = new Date(row.original.updatedAt);
-        const kolkataDate = toZonedTime(utcDate, process.env.TIMEZONE || "Asia/Kolkata");
+        const kolkataDate = toZonedTime(
+          utcDate,
+          process.env.TIMEZONE || "Asia/Kolkata"
+        );
         return formatDistanceToNow(kolkataDate, { addSuffix: true });
       } catch {
         return "—";
