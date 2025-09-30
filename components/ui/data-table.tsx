@@ -23,9 +23,10 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDebounce } from "@/hooks/use-debounce";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,6 +39,8 @@ interface DataTableProps<TData, TValue> {
   pageSize: number;
   onPageChange: (page: number) => void;
   loading?: boolean;
+  addButtonLabel?: string;
+  addButtonHref?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -51,6 +54,8 @@ export function DataTable<TData, TValue>({
   pageSize,
   onPageChange,
   loading = false,
+  addButtonLabel,
+  addButtonHref,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -98,17 +103,28 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="flex items-center gap-2 max-w-sm">
-        <div className="relative flex-1">
+      {/* Search Bar + Add Button */}
+      <div className="flex items-center justify-between">
+        {/* Search */}
+        <div className="relative w-full max-w-sm">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search..."
             value={searchValue}
-            onChange={(e) => onSearchChange(useDebounce(e.target.value))}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="pl-8"
           />
         </div>
+
+        {/* Add Button (conditional) */}
+        {addButtonLabel && addButtonHref && (
+          <Button asChild className="ml-4">
+            <Link href={addButtonHref}>
+              <Plus className="mr-2 h-4 w-4" />
+              {addButtonLabel}
+            </Link>
+          </Button>
+        )}
       </div>
 
       {/* Data Table */}
@@ -137,7 +153,7 @@ export function DataTable<TData, TValue>({
                 <TableRow key={`skeleton-${index}`}>
                   {columns.map((_, colIndex) => (
                     <TableCell key={`skeleton-cell-${colIndex}`}>
-                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-8 w-full" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -174,22 +190,28 @@ export function DataTable<TData, TValue>({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {loading ? (
-              <Skeleton className="h-5 w-48" />
-            ) : (
-              <>
-                Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                {Math.min(currentPage * pageSize, totalItems)} of {totalItems} results
-              </>
-            )}
-          </div>
-          <Pagination>
-            <PaginationContent>
+        <Pagination>
+          <PaginationContent className="w-full justify-between">
+            {/* Left side text */}
+            <span className="text-sm text-muted-foreground flex items-center">
+              {loading ? (
+                <Skeleton className="h-5 w-48" />
+              ) : (
+                <>
+                  Showing {(currentPage - 1) * pageSize + 1} to{" "}
+                  {Math.min(currentPage * pageSize, totalItems)} of {totalItems}{" "}
+                  results
+                </>
+              )}
+            </span>
+
+            {/* Pagination controls */}
+            <div className="flex items-center gap-1">
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={() => !loading && currentPage > 1 && onPageChange(currentPage - 1)}
+                  onClick={() =>
+                    !loading && currentPage > 1 && onPageChange(currentPage - 1)
+                  }
                   className={
                     currentPage === 1 || loading
                       ? "pointer-events-none opacity-50"
@@ -208,7 +230,11 @@ export function DataTable<TData, TValue>({
                     <PaginationLink
                       onClick={() => !loading && onPageChange(page as number)}
                       isActive={currentPage === page}
-                      className={loading ? "pointer-events-none opacity-50 cursor-pointer" : "cursor-pointer"}
+                      className={
+                        loading
+                          ? "pointer-events-none opacity-50 cursor-pointer"
+                          : "cursor-pointer"
+                      }
                     >
                       {page}
                     </PaginationLink>
@@ -219,7 +245,9 @@ export function DataTable<TData, TValue>({
               <PaginationItem>
                 <PaginationNext
                   onClick={() =>
-                    !loading && currentPage < totalPages && onPageChange(currentPage + 1)
+                    !loading &&
+                    currentPage < totalPages &&
+                    onPageChange(currentPage + 1)
                   }
                   className={
                     currentPage === totalPages || loading
@@ -228,9 +256,9 @@ export function DataTable<TData, TValue>({
                   }
                 />
               </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+            </div>
+          </PaginationContent>
+        </Pagination>
       )}
     </div>
   );

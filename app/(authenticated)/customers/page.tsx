@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DataTable } from "@/components/ui/data-table";
 import { customerColumns, Customer } from "@/components/customers/columns";
-import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/page-header";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export default function CustomersPage() {
   const router = useRouter();
@@ -15,53 +15,81 @@ export default function CustomersPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const search = searchParams.get("search") || "";
+  // Get current values from URL
   const page = parseInt(searchParams.get("page") || "1");
   const pageSize = 10;
+  const searchFromUrl = searchParams.get("search") || "";
 
-  // Fetch customers data
+  // Local state for search input (for instant UI feedback while typing)
+  const [searchInput, setSearchInput] = useState(searchFromUrl);
+
+  // Debounced version of search input
+  const debouncedSearch = useDebounce(searchInput, 500);
+
+  // Sync search input with URL when URL changes (e.g., browser back/forward)
   useEffect(() => {
-    const fetchCustomers = async () => {
-      setLoading(true);
-      try {
-        const offset = (page - 1) * pageSize;
-        const response = await fetch(
-          `/api/customers?search=${encodeURIComponent(
-            search
-          )}&limit=${pageSize}&offset=${offset}`
-        );
+    setSearchInput(searchFromUrl);
+  }, [searchFromUrl]);
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch customers");
-        }
-
-        const result = await response.json();
-        setData(result.data);
-        setTotal(result.total);
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCustomers();
-  }, [search, page, pageSize]);
-
-  // Handle search change
-  const handleSearchChange = (value: string) => {
+  // Update URL when debounced search changes
+  useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
 
-    if (value) {
-      params.set("search", value);
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
     } else {
       params.delete("search");
     }
 
-    // Reset to page 1 when searching
-    params.set("page", "1");
+    // Only update if different from current URL
+    if (debouncedSearch !== searchFromUrl) {
+      router.push(`?${params.toString()}`);
+    }
+  }, [debouncedSearch]); // Only depend on debouncedSearch
 
-    router.push(`?${params.toString()}`);
+  // Fetch data whenever URL params change
+  // Fetch data whenever URL params change
+useEffect(() => {
+  const fetchCustomers = async () => {
+    setLoading(true);
+    try {
+      const page = parseInt(searchParams.get("page") || "1");
+      const offset = (page - 1) * pageSize;
+      const search = searchParams.get("search") || "";
+
+      const response = await fetch(
+        `/api/customers?search=${encodeURIComponent(search)}&limit=${pageSize}&offset=${offset}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch customers");
+      }
+
+      const result = await response.json();
+      setData(result.data);
+      setTotal(result.pagination.total);
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCustomers();
+}, [searchParams.toString()]); // ✅ only track URL params
+
+
+  // Handle search input change
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    
+    // Reset to page 1 immediately when user starts typing
+    // This prevents the page 2 issue
+    if (page !== 1 && value !== searchFromUrl) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", "1");
+      router.replace(`?${params.toString()}`); // Use replace to avoid adding to history
+    }
   };
 
   // Handle page change
@@ -81,12 +109,12 @@ export default function CustomersPage() {
           { label: "Dashboard", href: "/dashboard" },
           { label: "Customers" },
         ]}
-      ></PageHeader>
+      />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <DataTable
           columns={customerColumns}
           data={data}
-          searchValue={search}
+          searchValue={searchInput}
           onSearchChange={handleSearchChange}
           currentPage={page}
           totalPages={totalPages}
@@ -94,6 +122,8 @@ export default function CustomersPage() {
           pageSize={pageSize}
           onPageChange={handlePageChange}
           loading={loading}
+          addButtonLabel="Add Customer"
+          addButtonHref="/customers/add"
         />
       </div>
     </>
