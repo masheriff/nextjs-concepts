@@ -14,7 +14,7 @@ import { alias } from "drizzle-orm/pg-core";
 // =====================
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSessionFromRequest(request);
@@ -22,7 +22,9 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const customerId = parseInt(params.id);
+    const { id } = await context.params;
+    const customerId = parseInt(id);
+
     if (isNaN(customerId)) {
       return NextResponse.json(
         { error: "Invalid customer ID" },
@@ -83,7 +85,7 @@ export async function GET(
 // =====================
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSessionFromRequest(request);
@@ -91,7 +93,8 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const customerId = parseInt(params.id);
+    const { id } = await context.params;
+    const customerId = parseInt(id);
     if (isNaN(customerId)) {
       return NextResponse.json(
         { error: "Invalid customer ID" },
@@ -177,7 +180,7 @@ export async function PATCH(
 // =====================
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSessionFromRequest(request);
@@ -185,7 +188,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const customerId = parseInt(params.id);
+    const { id } = await context.params;
+    const customerId = parseInt(id);
     if (isNaN(customerId)) {
       return NextResponse.json(
         { error: "Invalid customer ID" },
