@@ -1,4 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
+import { formatDistanceToNow } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -23,4 +25,26 @@ export function isDatabaseError(error: unknown): error is DatabaseError {
     ("code" in error || "cause" in (error as any))
   );
 }
+
+export function formatIndianCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+export function formatRelativeTime(date: Date | string): string {
+  try {
+    const utcDate = new Date(date);
+    const kolkataDate = toZonedTime(utcDate, "Asia/Kolkata");
+    return formatDistanceToNow(kolkataDate, { addSuffix: true });
+  } catch {
+    return "—";
+  }
+}
+
+
+
 

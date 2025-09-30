@@ -12,12 +12,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { toZonedTime } from "date-fns-tz";
 import { TableUserDisplay } from "../table-user-display";
+import { formatIndianCurrency, formatRelativeTime } from "@/lib/utils";
+import { StatusBadge } from "./status-badge";
 
 export type Invoice = {
   id: number;
@@ -42,7 +44,8 @@ export type Invoice = {
 };
 
 const statusColors = {
-  pending: "bg-yellow-100 text-yellow-800 border-1 border-yellow-100 hover:bg-yellow-100",
+  pending:
+    "bg-yellow-100 text-yellow-800 border-1 border-yellow-100 hover:bg-yellow-100",
   paid: "bg-green-100 text-green-800 border-1 border-green-100 hover:bg-green-100",
   cancelled: "bg-red-100 text-red-800 border-1 border-red-100 hover:bg-red-100",
 };
@@ -136,67 +139,40 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status") as keyof typeof statusColors;
-      return (
-        <Badge variant="outline" className={statusColors[status]}>
-          {statusLabels[status]}
-        </Badge>
-      );
+      return <StatusBadge status={row.getValue("status")} />;
     },
   },
   {
     accessorKey: "total",
     header: "Total",
     cell: ({ row }) => {
-      const total = parseFloat(row.getValue("total"));
-      return new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-      }).format(total);
+      return formatIndianCurrency(parseFloat(row.getValue("total")));
     },
   },
   {
     accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {
-      try {
-        const utcDate = new Date(row.original.createdAt);
-        const kolkataDate = toZonedTime(
-          utcDate,
-          process.env.TIMEZONE || "Asia/Kolkata"
-        );
-        return formatDistanceToNow(kolkataDate, { addSuffix: true });
-      } catch {
-        return "—";
-      }
+      return formatRelativeTime(new Date(row.original.createdAt));
     },
   },
   {
     accessorKey: "updatedAt",
     header: "Updated At",
     cell: ({ row }) => {
-      try {
-        const utcDate = new Date(row.original.updatedAt);
-        const kolkataDate = toZonedTime(
-          utcDate,
-          process.env.TIMEZONE || "Asia/Kolkata"
-        );
-        return formatDistanceToNow(kolkataDate, { addSuffix: true });
-      } catch {
-        return "—";
-      }
+      return formatRelativeTime(new Date(row.original.updatedAt));
     },
   },
   {
-      accessorKey: "createdBy",
-      header: "Created By",
-      cell: ({ row }) => <TableUserDisplay user={row.original.createdBy} />,
-    },
-    {
-      accessorKey: "updatedBy",
-      header: "Updated By",
-      cell: ({ row }) => <TableUserDisplay user={row.original.updatedBy} />,
-    },
+    accessorKey: "createdBy",
+    header: "Created By",
+    cell: ({ row }) => <TableUserDisplay user={row.original.createdBy} />,
+  },
+  {
+    accessorKey: "updatedBy",
+    header: "Updated By",
+    cell: ({ row }) => <TableUserDisplay user={row.original.updatedBy} />,
+  },
   {
     id: "actions",
     cell: ({ row }) => <ActionsCell invoice={row.original} />,

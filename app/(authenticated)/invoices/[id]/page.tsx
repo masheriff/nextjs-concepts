@@ -4,9 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Loader2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TableUserDisplay } from "@/components/table-user-display";
+import { formatIndianCurrency } from "@/lib/utils";
+import { StatusBadge } from "@/components/invoices/status-badge";
 
 interface InvoiceItem {
   id: number;
@@ -51,18 +52,6 @@ interface Invoice {
   } | null;
   items: InvoiceItem[];
 }
-
-const statusColors = {
-  pending: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-  paid: "bg-green-100 text-green-800 hover:bg-green-100",
-  cancelled: "bg-red-100 text-red-800 hover:bg-red-100",
-};
-
-const statusLabels = {
-  pending: "Pending",
-  paid: "Paid",
-  cancelled: "Cancelled",
-};
 
 export default function ViewInvoicePage() {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -160,12 +149,7 @@ export default function ViewInvoicePage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Status</p>
-                <Badge
-                  variant="outline"
-                  className={statusColors[invoice.status]}
-                >
-                  {statusLabels[invoice.status]}
-                </Badge>
+                <StatusBadge status={invoice.status} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Created</p>
@@ -185,7 +169,7 @@ export default function ViewInvoicePage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Updated By</p>
-               <TableUserDisplay user={invoice.updatedBy} />
+                <TableUserDisplay user={invoice.updatedBy} />
               </div>
             </div>
 
@@ -212,12 +196,11 @@ export default function ViewInvoicePage() {
                           <TableCell>{item.productName}</TableCell>
                           <TableCell>{item.quantity}</TableCell>
                           <TableCell>
-                            {new Intl.NumberFormat("en-IN", {
-                              style: "currency",
-                              currency: "INR",
-                            }).format(parseFloat(item.price))}
+                            {formatIndianCurrency(parseFloat(item.price))}
                           </TableCell>
-                          <TableCell>${subtotal}</TableCell>
+                          <TableCell>
+                            {formatIndianCurrency(parseFloat(subtotal))}
+                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -225,10 +208,7 @@ export default function ViewInvoicePage() {
                       <TableCell colSpan={2}></TableCell>
                       <TableCell>Total</TableCell>
                       <TableCell className="font-bold">
-                        {new Intl.NumberFormat("en-IN", {
-                          style: "currency",
-                          currency: "INR",
-                        }).format(parseFloat(invoice.total))}
+                        {formatIndianCurrency(parseFloat(invoice.total))}
                       </TableCell>
                     </TableRow>
                   </TableBody>

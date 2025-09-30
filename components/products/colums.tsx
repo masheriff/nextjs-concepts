@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TableUserDisplay } from "@/components/table-user-display";
 import { toZonedTime } from "date-fns-tz";
+import { formatIndianCurrency, formatRelativeTime } from "@/lib/utils";
 
 export type Product = {
   id: number;
@@ -167,43 +168,21 @@ export const productColumns: ColumnDef<Product>[] = [
     accessorKey: "price",
     header: "Price",
     cell: ({ row }) => {
-      const price = parseFloat(row.original.price);
-      return new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-      }).format(price);
+      return formatIndianCurrency(parseFloat(row.original.price));
     },
   },
   {
     accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {
-      try {
-        const utcDate = new Date(row.original.createdAt);
-        const kolkataDate = toZonedTime(
-          utcDate,
-          process.env.TIMEZONE || "Asia/Kolkata"
-        );
-        return formatDistanceToNow(kolkataDate, { addSuffix: true });
-      } catch {
-        return "—";
-      }
+      return formatRelativeTime(new Date(row.original.createdAt));
     },
   },
   {
     accessorKey: "updatedAt",
     header: "Updated At",
     cell: ({ row }) => {
-      try {
-        const utcDate = new Date(row.original.updatedAt);
-        const kolkataDate = toZonedTime(
-          utcDate,
-          process.env.TIMEZONE || "Asia/Kolkata"
-        );
-        return formatDistanceToNow(kolkataDate, { addSuffix: true });
-      } catch {
-        return "—";
-      }
+      return formatRelativeTime(new Date(row.original.updatedAt));
     },
   },
   {

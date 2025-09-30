@@ -6,94 +6,94 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
 
-interface Product {
+interface Customer {
   id: number;
   name: string;
-  price: string;
+  email: string;
 }
 
-interface ProductSearchProps {
-  onSelect: (product: Product) => void;
-  selectedProductId?: number;
-  selectedProductName?: string;
+interface CustomerSearchProps {
+  onSelect: (customer: Customer) => void;
+  selectedCustomerId?: number;
+  selectedCustomerName?: string;
   disabled?: boolean;
   placeholder?: string;
 }
 
-export function ProductSearch({
+export function CustomerSearch({
   onSelect,
-  selectedProductId,
-  selectedProductName,
+  selectedCustomerId,
+  selectedCustomerName,
   disabled = false,
-  placeholder = "Search products...",
-}: ProductSearchProps) {
+  placeholder = "Search customers...",
+}: CustomerSearchProps) {
   const [searchInput, setSearchInput] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const debouncedSearch = useDebounce(searchInput, 300);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Fetch and display the selected product on initial load
+  // Fetch and display the selected customer on initial load
   useEffect(() => {
-    const fetchSelectedProduct = async () => {
-      // If we have selectedProductName, use it directly
-      if (selectedProductName) {
-        setSearchInput(selectedProductName);
+    const fetchSelectedCustomer = async () => {
+      // If we have selectedCustomerName, use it directly
+      if (selectedCustomerName) {
+        setSearchInput(selectedCustomerName);
         return;
       }
 
-      // Otherwise, fetch the product details if we have an ID
-      if (selectedProductId) {
+      // Otherwise, fetch the customer details if we have an ID
+      if (selectedCustomerId) {
         try {
-          const response = await fetch(`/api/products/${selectedProductId}`);
+          const response = await fetch(`/api/customers/${selectedCustomerId}`);
           
           if (!response.ok) {
-            console.error("Failed to fetch selected product");
+            console.error("Failed to fetch selected customer");
             return;
           }
 
-          const product = await response.json();
-          setSearchInput(product.name);
+          const customer = await response.json();
+          setSearchInput(customer.name);
         } catch (error) {
-          console.error("Error fetching selected product:", error);
+          console.error("Error fetching selected customer:", error);
         }
       }
     };
 
-    fetchSelectedProduct();
-  }, [selectedProductId, selectedProductName]);
+    fetchSelectedCustomer();
+  }, [selectedCustomerId, selectedCustomerName]);
 
-  // Search products when debounced search changes
+  // Search customers when debounced search changes
   useEffect(() => {
-    const searchProducts = async () => {
+    const searchCustomers = async () => {
       if (!debouncedSearch.trim()) {
-        setProducts([]);
+        setCustomers([]);
         return;
       }
 
       setLoading(true);
       try {
         const response = await fetch(
-          `/api/products?search=${encodeURIComponent(debouncedSearch)}&limit=10`
+          `/api/customers?search=${encodeURIComponent(debouncedSearch)}&limit=10`
         );
 
         if (!response.ok) {
-          throw new Error("Failed to search products");
+          throw new Error("Failed to search customers");
         }
 
         const result = await response.json();
-        setProducts(result.data || []);
+        setCustomers(result.data || []);
         setShowDropdown(true);
       } catch (error) {
-        console.error("Error searching products:", error);
-        setProducts([]);
+        console.error("Error searching customers:", error);
+        setCustomers([]);
       } finally {
         setLoading(false);
       }
     };
 
-    searchProducts();
+    searchCustomers();
   }, [debouncedSearch]);
 
   // Close dropdown when clicking outside
@@ -111,9 +111,9 @@ export function ProductSearch({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (product: Product) => {
-    onSelect(product);
-    setSearchInput(product.name);
+  const handleSelect = (customer: Customer) => {
+    onSelect(customer);
+    setSearchInput(customer.name);
     setShowDropdown(false);
   };
 
@@ -146,32 +146,32 @@ export function ProductSearch({
               <div className="px-3 py-2 text-sm text-muted-foreground">
                 Searching...
               </div>
-            ) : products.length > 0 ? (
-              products.map((product) => (
+            ) : customers.length > 0 ? (
+              customers.map((customer) => (
                 <button
-                  key={product.id}
+                  key={customer.id}
                   type="button"
-                  onClick={() => handleSelect(product)}
+                  onClick={() => handleSelect(customer)}
                   className={cn(
-                    "flex w-full items-center justify-between rounded-sm px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground",
-                    selectedProductId === product.id && "bg-accent"
+                    "flex w-full flex-col items-start rounded-sm px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground",
+                    selectedCustomerId === customer.id && "bg-accent"
                   )}
                 >
-                  <span>{product.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">
-                      ${parseFloat(product.price).toFixed(2)}
-                    </span>
-                    {selectedProductId === product.id && (
+                  <div className="flex w-full items-center justify-between">
+                    <span className="font-medium">{customer.name}</span>
+                    {selectedCustomerId === customer.id && (
                       <Check className="h-4 w-4" />
                     )}
                   </div>
+                  <span className="text-xs text-muted-foreground">
+                    {customer.email}
+                  </span>
                 </button>
               ))
             ) : (
               <div className="px-3 py-2 text-sm text-muted-foreground">
                 {debouncedSearch.trim()
-                  ? "No products found"
+                  ? "No customers found"
                   : "Start typing to search"}
               </div>
             )}

@@ -21,7 +21,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { InvoiceItemRow } from "./invoice-item-row";
+import { CustomerSearch } from "@/components/customers/customer-search";
 import { invoiceFormSchema, InvoiceFormValues, InvoiceItem } from "@/schema/invoice";
+import { formatIndianCurrency } from "@/lib/utils";
 
 interface Customer {
   id: number;
@@ -32,7 +34,9 @@ interface Customer {
 interface InvoiceFormProps {
   onSubmit: (data: InvoiceFormValues) => Promise<void>;
   isLoading?: boolean;
-  defaultValues?: Partial<InvoiceFormValues>;
+  defaultValues?: Partial<InvoiceFormValues> & {
+    customerName?: string;
+  };
 }
 
 export function InvoiceForm({
@@ -40,9 +44,6 @@ export function InvoiceForm({
   isLoading = false,
   defaultValues,
 }: InvoiceFormProps) {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loadingCustomers, setLoadingCustomers] = useState(true);
-
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
     defaultValues: {
@@ -55,24 +56,6 @@ export function InvoiceForm({
   });
 
   const { fields, append, remove } = form.watch("items") as any;
-
-  // Fetch customers
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await fetch("/api/customers?limit=1000");
-        if (!response.ok) throw new Error("Failed to fetch customers");
-        const result = await response.json();
-        setCustomers(result.data || []);
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-      } finally {
-        setLoadingCustomers(false);
-      }
-    };
-
-    fetchCustomers();
-  }, []);
 
   const addItem = () => {
     const currentItems = form.getValues("items") || [];
@@ -101,13 +84,18 @@ export function InvoiceForm({
 
   const calculateTotal = () => {
     const items = form.watch("items") || [];
-    return items
+    let total =  items
       .reduce((sum, item) => {
         const price = parseFloat(item.price || "0");
         const quantity = item.quantity || 0;
         return sum + price * quantity;
       }, 0)
       .toFixed(2);
+    return formatIndianCurrency(parseFloat(total));
+  };
+
+  const handleCustomerSelect = (customer: Customer) => {
+    form.setValue("customerId", customer.id);
   };
 
   return (
@@ -120,34 +108,15 @@ export function InvoiceForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Customer</FormLabel>
-              <Select
-                onValueChange={(value) => field.onChange(parseInt(value))}
-                value={field.value?.toString()}
-                disabled={isLoading || loadingCustomers}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a customer" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {loadingCustomers ? (
-                    <div className="px-2 py-1 text-sm text-muted-foreground">
-                      Loading customers...
-                    </div>
-                  ) : customers.length > 0 ? (
-                    customers.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id.toString()}>
-                        {customer.name} ({customer.email})
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <div className="px-2 py-1 text-sm text-muted-foreground">
-                      No customers found
-                    </div>
-                  )}
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <CustomerSearch
+                  onSelect={handleCustomerSelect}
+                  selectedCustomerId={field.value}
+                  selectedCustomerName={defaultValues?.customerName}
+                  disabled={isLoading}
+                  placeholder="Search and select customer..."
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -230,9 +199,9 @@ export function InvoiceForm({
         {/* Total */}
         <div className="flex justify-end">
           <div className="w-64 space-y-2 rounded-lg border p-4">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between align-top text-sm">
               <span className="font-medium">Total:</span>
-              <span className="font-bold text-lg">${calculateTotal()}</span>
+              <span className="font-bold text-lg">{calculateTotal()}</span>
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductSearch } from "@/components/products/product-search";
 import { InvoiceItem } from "@/schema/invoice";
+import { formatIndianCurrency } from "@/lib/utils";
 
 interface InvoiceItemRowProps {
   item: InvoiceItem;
@@ -38,6 +39,7 @@ export function InvoiceItemRow({
         <ProductSearch
           onSelect={handleProductSelect}
           selectedProductId={item.productId}
+          selectedProductName={item.productName}
           disabled={disabled}
           placeholder="Search and select product..."
         />
@@ -70,7 +72,7 @@ export function InvoiceItemRow({
 
       {/* Subtotal - 2 columns */}
       <div className="col-span-2">
-        <Input value={`$${subtotal}`} disabled className="bg-muted" />
+        <Input value={formatIndianCurrency(parseFloat(subtotal))} disabled className="bg-muted" />
       </div>
 
       {/* Remove Button - 1 column */}

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TableUserDisplay } from "@/components/table-user-display";
 import { toZonedTime } from "date-fns-tz";
+import { formatRelativeTime } from "@/lib/utils";
 
 export type Customer = {
   id: number;
@@ -165,32 +166,14 @@ export const customerColumns: ColumnDef<Customer>[] = [
     accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {
-      try {
-        const utcDate = new Date(row.original.createdAt);
-        const kolkataDate = toZonedTime(
-          utcDate,
-          process.env.TIMEZONE || "Asia/Kolkata"
-        );
-        return formatDistanceToNow(kolkataDate, { addSuffix: true });
-      } catch {
-        return "—";
-      }
+      return formatRelativeTime(new Date(row.original.createdAt));
     },
   },
   {
     accessorKey: "updatedAt",
     header: "Updated At",
     cell: ({ row }) => {
-      try {
-        const utcDate = new Date(row.original.updatedAt);
-        const kolkataDate = toZonedTime(
-          utcDate,
-          process.env.TIMEZONE || "Asia/Kolkata"
-        );
-        return formatDistanceToNow(kolkataDate, { addSuffix: true });
-      } catch {
-        return "—";
-      }
+      return formatRelativeTime(new Date(row.original.updatedAt));
     },
   },
   {
