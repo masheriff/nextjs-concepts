@@ -1,8 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,9 +11,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Loader2 } from "lucide-react";
-
-// Import the customer schema
 import { customerSchema } from "@/schema/customer";
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
@@ -23,99 +22,98 @@ type CustomerFormValues = z.infer<typeof customerSchema>;
 interface CustomerFormProps {
   onSubmit: (data: CustomerFormValues) => Promise<void>;
   isLoading?: boolean;
-  defaultValues?: Partial<CustomerFormValues>;
+  initialData?: CustomerFormValues;
+  className?: string;
 }
 
 export function CustomerForm({
+  className,
+  initialData,
   onSubmit,
   isLoading = false,
-  defaultValues,
+  ...props
 }: CustomerFormProps) {
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
-      name: defaultValues?.name || "",
-      email: defaultValues?.email || "",
-      phone: defaultValues?.phone || null,
+      name: initialData?.name || "",
+      email: initialData?.email || "",
+      phone: initialData?.phone || null,
     },
   });
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter customer name"
-                  {...field}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form
+        className={cn("flex flex-col gap-6", className)}
+        onSubmit={form.handleSubmit(onSubmit)}
+        {...props}
+      >
+        <div className="grid gap-6">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="John Doe" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="customer@example.com"
-                  {...field}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="email"
+                    placeholder="john.doe@example.com"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone (Optional)</FormLabel>
-              <FormControl>
-                <Input
-                  type="tel"
-                  placeholder="Enter phone number (min 10 digits)"
-                  {...field}
-                  value={field.value || ""}
-                  onChange={(e) => {
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone (Optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="tel"
+                    placeholder="1234567890"
+                    value={field.value || ""}
+                    onChange={(e) => {
                     // Convert empty string to null for optional field
                     const value =
                       e.target.value.trim() === "" ? null : e.target.value;
                     field.onChange(value);
                   }}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating Customer...
-            </>
-          ) : (
-            "Create Customer"
-          )}
-        </Button>
+        <div className="flex gap-4">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {initialData ? "Update Customer" : "Create Customer"}
+          </Button>
+        </div>
       </form>
     </Form>
   );
