@@ -4,56 +4,56 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
-import { CustomerForm } from "@/components/customers/customer-form";
 import { z } from "zod";
-import { customerSchema } from "@/schema/customer";
-import { CustomerFormSkeleton } from "@/components/customers/customer-form-skeleton";
+import { productSchema } from "@/schema/product";
+import { ProductForm } from "@/components/products/product-form";
+import { ProductFormSkeleton } from "@/components/products/product-form-skeleton";
 
-type CustomerFormValues = z.infer<typeof customerSchema>;
+type ProductFormValues = z.infer<typeof productSchema>;
 
-interface Customer extends CustomerFormValues {
+interface Product extends ProductFormValues {
   id: number;
 }
 
-export default function EditCustomerPage() {
+export default function EditProductPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
   useEffect(() => {
-    const fetchCustomer = async () => {
+    const fetchProduct = async () => {
       try {
-        const response = await fetch(`/api/customers/${id}`);
+        const response = await fetch(`/api/products/${id}`);
 
         if (!response.ok) {
           toast.error(
             response.status === 404 
-              ? "Customer not found" 
-              : "Failed to fetch customer"
+              ? "Product not found" 
+              : "Failed to fetch product"
           );
-          router.push("/customers");
+          router.push("/products");
           return;
         }
 
         const data = await response.json();
-        setCustomer(data);
+        setProduct(data);
       } catch (error) {
-        console.error("Error fetching customer:", error);
-        toast.error("Failed to load customer data");
-        router.push("/customers");
+        console.error("Error fetching product:", error);
+        toast.error("Failed to load product data");
+        router.push("/products");
       }
     };
 
-    fetchCustomer();
-  }, [params.id, router]);
+    fetchProduct();
+  }, [id, router]);
 
-  const handleSubmit = async (data: CustomerFormValues) => {
+  const handleSubmit = async (data: ProductFormValues) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/customers/${params.id}`, {
+      const response = await fetch(`/api/products/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -68,18 +68,18 @@ export default function EditCustomerPage() {
             .join(", ");
           toast.error(`Validation Error: ${errorMessages}`);
         } else {
-          toast.error(result.error || "Failed to update customer");
+          toast.error(result.error || "Failed to update product");
         }
         return;
       }
 
-      toast.success("Customer updated successfully!", {
+      toast.success("Product updated successfully!", {
         description: `${result.name}'s information has been updated.`,
       });
 
-      setTimeout(() => router.push("/customers"), 1500);
+      setTimeout(() => router.push("/products"), 1500);
     } catch (error) {
-      console.error("Error updating customer:", error);
+      console.error("Error updating product:", error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -89,10 +89,10 @@ export default function EditCustomerPage() {
   return (
     <>
       <PageHeader
-        title="Edit Customer"
+        title="Edit Product"
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
-          { label: "Customers", href: "/customers" },
+          { label: "Products", href: "/products" },
           { label: "Edit" },
         ]}
       />
@@ -100,24 +100,25 @@ export default function EditCustomerPage() {
         <div className="mx-auto w-full max-w-2xl">
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold">Customer Information</h2>
+              <h2 className="text-2xl font-semibold">
+                Edit Product Information
+              </h2>
               <p className="text-muted-foreground text-sm mt-1">
-                Update the customer details below.
+                Update the product details below.
               </p>
             </div>
-            
-            {!customer ? (
-              <CustomerFormSkeleton />
-            ) : (
-              <CustomerForm
-                initialData={{
-                  name: customer.name,
-                  email: customer.email,
-                  phone: customer.phone,
-                }}
+            {product ? (
+              <ProductForm
                 onSubmit={handleSubmit}
                 isLoading={isLoading}
+                defaultValues={{
+                  name: product.name,
+                  description: product.description,
+                  price: product.price,
+                }}
               />
+            ) : (
+              <ProductFormSkeleton />
             )}
           </div>
         </div>

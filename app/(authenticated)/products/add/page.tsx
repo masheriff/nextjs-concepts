@@ -4,21 +4,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
-import { CustomerForm } from "@/components/customers/customer-form";
 import { z } from "zod";
-import { customerSchema } from "@/schema/customer";
+import { productSchema } from "@/schema/product";
+import { ProductForm } from "@/components/products/product-form";
 
-type CustomerFormValues = z.infer<typeof customerSchema>;
+type ProductFormValues = z.infer<typeof productSchema>;
 
-export default function AddCustomerPage() {
+export default function AddProductPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (data: CustomerFormValues) => {
+  const handleSubmit = async (data: ProductFormValues) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/customers", {
+      const response = await fetch("/api/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,26 +35,23 @@ export default function AddCustomerPage() {
             .map((issue: any) => issue.message)
             .join(", ");
           toast.error(`Validation Error: ${errorMessages}`);
-        } else if (response.status === 409) {
-          // Duplicate email error
-          toast.error(result.error || "A customer with this email already exists");
         } else {
-          toast.error(result.error || "Failed to create customer");
+          toast.error(result.error || "Failed to create product");
         }
         return;
       }
 
       // Success
-      toast.success("Customer created successfully!", {
-        description: `${result.name} has been added to your customer list.`,
+      toast.success("Product created successfully!", {
+        description: `${result.name} has been added to your product list.`,
       });
 
-      // Redirect to customers list or dashboard after a short delay
+      // Redirect to products list after a short delay
       setTimeout(() => {
-        router.push("/customers");
+        router.push("/products");
       }, 1500);
     } catch (error) {
-      console.error("Error creating customer:", error);
+      console.error("Error creating product:", error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -64,10 +61,10 @@ export default function AddCustomerPage() {
   return (
     <>
       <PageHeader
-        title="Add Customer"
+        title="Add Product"
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
-          { label: "Customers", href: "/customers" },
+          { label: "Products", href: "/products" },
           { label: "Add" },
         ]}
       />
@@ -75,12 +72,12 @@ export default function AddCustomerPage() {
         <div className="mx-auto w-full max-w-2xl">
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold">Customer Information</h2>
+              <h2 className="text-2xl font-semibold">Product Information</h2>
               <p className="text-muted-foreground text-sm mt-1">
-                Fill in the details below to add a new customer to your system.
+                Fill in the details below to add a new product to your system.
               </p>
             </div>
-            <CustomerForm onSubmit={handleSubmit} isLoading={isLoading} />
+            <ProductForm onSubmit={handleSubmit} isLoading={isLoading} />
           </div>
         </div>
       </div>
