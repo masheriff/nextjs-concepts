@@ -8,6 +8,7 @@ import { getSessionFromRequest } from "@/dal";
 import { customerSchema } from "@/schema";
 import { isDatabaseError } from "@/lib/utils";
 import { alias } from "drizzle-orm/pg-core";
+import { toZonedTime } from "date-fns-tz";
 
 // =====================
 // GET - Get single customer by ID
@@ -144,7 +145,7 @@ export async function PATCH(
       .set({
         ...validationResult.data,
         updatedBy: session.user.id,
-        updatedAt: new Date(),
+        updatedAt: toZonedTime(new Date(), "Asia/Kolkata"), // Ensure updatedAt is set to current time
       })
       .where(eq(customers.id, customerId))
       .returning();

@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     type SortKey = keyof typeof columnMap;
 
     // read sortBy and pick a safe column from columnMap (fallback to createdAt)
-    const sortByParam = (searchParams.get("sortBy") ?? "createdAt") as SortKey;
+    const sortByParam = (searchParams.get("sortBy") ?? "updatedAt") as SortKey;
     const sortColumn = Object.prototype.hasOwnProperty.call(
       columnMap,
       sortByParam

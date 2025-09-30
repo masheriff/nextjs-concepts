@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { TableUserDisplay } from "@/components/table-user-display";
+import { toZonedTime } from "date-fns-tz";
 
 export type Customer = {
   id: number;
@@ -50,16 +52,43 @@ export type Customer = {
 function ActionsCell({ customer }: { customer: Customer }) {
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleEdit = () => {
     router.push(`/customers/${customer.id}/edit`);
   };
 
   const handleDelete = async () => {
-    // Add your delete logic here
-    console.log("Deleting customer:", customer.id);
-    // After successful deletion, you might want to refresh the data
-    setShowDeleteDialog(false);
+    try {
+      setIsDeleting(true);
+
+      const response = await fetch(`/api/customers/${customer.id}`, {
+        method: "DELETE",
+      });
+
+      // Close dialog
+      setShowDeleteDialog(false);
+
+      // Show success toast
+      toast.success("Customer deleted successfully", {
+        description: `${customer.name} has been removed from the database.`,
+      });
+
+      // Refresh the router cache and revalidate
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+
+      // Show error toast
+      toast.error("Failed to delete customer", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -97,12 +126,13 @@ function ActionsCell({ customer }: { customer: Customer }) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
+              disabled={isDeleting}
               className="bg-destructive text-white hover:bg-destructive/90"
             >
-              Delete
+              {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -130,8 +160,9 @@ export const customerColumns: ColumnDef<Customer>[] = [
     header: "Created At",
     cell: ({ row }) => {
       try {
-        const dateString = row.original.createdAt.replace("Z", "");
-        return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+        const utcDate = new Date(row.original.createdAt);
+        const kolkataDate = toZonedTime(utcDate, process.env.TIMEZONE || "Asia/Kolkata");
+        return formatDistanceToNow(kolkataDate, { addSuffix: true });
       } catch {
         return "—";
       }
@@ -142,8 +173,9 @@ export const customerColumns: ColumnDef<Customer>[] = [
     header: "Updated At",
     cell: ({ row }) => {
       try {
-        const dateString = row.original.updatedAt.replace("Z", "");
-        return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+        const utcDate = new Date(row.original.updatedAt);
+        const kolkataDate = toZonedTime(utcDate, process.env.TIMEZONE || "Asia/Kolkata");
+        return formatDistanceToNow(kolkataDate, { addSuffix: true });
       } catch {
         return "—";
       }

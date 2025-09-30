@@ -28,8 +28,8 @@ export const customers = pgTable("customers", {
   email: text("email").notNull().unique(),
   phone: text("phone"),
 
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow().$onUpdate(() => new Date()).notNull(),
   createdBy: text("created_by").references(() => user.id),
   updatedBy: text("updated_by").references(() => user.id),
 });
@@ -43,8 +43,8 @@ export const products = pgTable("products", {
   description: text("description"),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
 
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow().$onUpdate(() => new Date()).notNull(),
   createdBy: text("created_by").references(() => user.id),
   updatedBy: text("updated_by").references(() => user.id),
 });
@@ -58,8 +58,8 @@ export const invoices = pgTable("invoices", {
   status: invoiceStatusEnum("status").default("pending").notNull(),
   total: numeric("total", { precision: 10, scale: 2 }).notNull(),
 
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow().$onUpdate(() => new Date()).notNull(),
   createdBy: text("created_by").references(() => user.id),
   updatedBy: text("updated_by").references(() => user.id),
 });
@@ -74,8 +74,8 @@ export const invoiceItems = pgTable("invoice_items", {
   quantity: integer("quantity").notNull().default(1),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(), // snapshot of product price at invoice time
 
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow().$onUpdate(() => new Date()).notNull(),
   createdBy: text("created_by").references(() => user.id),
   updatedBy: text("updated_by").references(() => user.id),
 });
